@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/Juangmar/twitter_bots#readme",
   "dependencies": {
+    "index.js": "0.0.3",
     "twit": "^2.2.9"
   }
 }
