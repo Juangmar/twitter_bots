@@ -54,19 +54,25 @@ function listen(){
 	var code = 0; // The initial code for the tweet that will be RTed.
 	//Stream. Each time a tweet is detected, execute the code below.
 	stream.on('tweet', function (tweet) {
-			var today = new Date(); //Get the day + hour the tweet is detected.
-			var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //String containing the date. Format "yyyy-mm-dd"
-			var filename = "log" + "\"" + date + ".txt"; //Log file name. It's in the log directory, with the name log\yyyy-mm-dd.txt
-			var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ] "; //String containig the hour. Format "[ HH:MM:SS ] " 
-		if (users.indexOf(parseInt(tweet.user.id)) > -1){ //If the author of the tweet is in the user list:
-			// Show on log (console) the info of the tweet detected, and inform that the RT is on process.
-			// [ HH:MM:SS ] @user_name just tweeted! Now retweeting... {code: 12345}
-			console.log(hour + "@" + tweet.user.screen_name + " just tweeted! Now retweeting... {code: " + code + "}"); 
-			postTweet(tweet, code); //Method that RTs the tweet with the previous code.
-			code++; //Tweet RTd, so the unique code is incremented.
+		try{
+				var today = new Date(); //Get the day + hour the tweet is detected.
+				var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //String containing the date. Format "yyyy-mm-dd"
+				var filename = "log" + "\"" + date + ".txt"; //Log file name. It's in the log directory, with the name log\yyyy-mm-dd.txt
+				var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ] "; //String containig the hour. Format "[ HH:MM:SS ] " 
+			if (users.indexOf(parseInt(tweet.user.id)) > -1){ //If the author of the tweet is in the user list:
+				// Show on log (console) the info of the tweet detected, and inform that the RT is on process.
+				// [ HH:MM:SS ] @user_name just tweeted! Now retweeting... {code: 12345}
+				console.log(hour + "@" + tweet.user.screen_name + " just tweeted! Now retweeting... {code: " + code + "}"); 
+				postTweet(tweet); //Method that RTs the tweet with the previous code.
+				code++; //Tweet RTd, so the unique code is incremented.
+			} else{ //The tweet is not from the user list
+				console.log(hour + "Tweet detected from @" + tweet.user.screen_name + " (Not followed)"); //Print log. Tweet detected but not RTed.
+			}
 			reloadUsers();	//In case the user list is modified from the app or anywhere else, reolad the list (asyncronous).
-		} else{ //The tweet is not from the user list
-			console.log(hour + "Tweet detected from @" + tweet.user.screen_name + " (Not followed)"); //Print log. Tweet detected but not RTed.
+		}catch(err){
+			console.log("--> " + hour + "Exception catched. Rebooting");
+			reloadUsers();
+			checkVariable();
 		}
 	})
 }
@@ -74,10 +80,14 @@ function listen(){
 /*
 	Given a tweet and a code, the bot Rts it and prints the success message with the error.
 */
-function postTweet(tweet, code){
+function postTweet(tweet){
 	//Post from the app, in form of RT and id, using the tweet.id_str, and executing the declared function.
 	T.post('statuses/retweet/:id', {id: tweet.id_str}, function (err,data,response){
-		console.log("\t" + "RT "+ code + " done!"); //Confirm the success of the {code} tweet RT.
+		var today = new Date();
+		var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
+		var filename = "log" + "\"" + date + ".txt";
+		var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ] ";
+		console.log(hour + "RT "+ tweet.id + " done!"); //Confirm the success of the {code} tweet RT.
 		/*
 			WARNING: IN THE NEXT VERSION THIS FUNCTION WILL HAVE AN IF-ELSE
 			TO PRINT THE SUCCESS OR THE ERROR.
@@ -91,10 +101,10 @@ function postTweet(tweet, code){
 function reloadUsers(){
 	//Get the friends(follows) id from the @AAAAAA user, and execute the following function.
 	T.get('friends/ids', {screen_name: 'noticias_SLO'}, function (err, data, response) {
-		users = data.ids; //The users content is replaced with the obtained list in the data.ids field.
-		/*
-			WARNING: IN THE NEXT VERSION THIS FUNCTION WILL HAVE AN IF-ELSE
-			TO PRINT THE SUCCESS OR THE ERROR.
-		*/
+		if(!err){
+			users = data.ids; //The users content is replaced with the obtained list in the data.ids field.
+		}else{
+			//The twitter api doasn't respond or there's an error.
+		}
 	})
 }
