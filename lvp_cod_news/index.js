@@ -20,8 +20,8 @@ var sec = 0; //Integer variable to count how many seconds it takes to get the us
 
 console.log("Booting up...... success!"); //Initial message. The app is running.
 console.log("Loading IDs..."); // Message: The loading of users begin.
-reloadUsers(); //User load begin
-checkVariable(); //Method to wait for the loading
+reloadUsers(); //User first load begin
+checkVariable(); //Method to wait for the loading to finish
 
 var stream = T.stream('statuses/filter', {follow: users}); //Variable that stores the twitter timeline.
 
@@ -33,7 +33,7 @@ function checkVariable() {
 		process.stdout.write("IDs loaded after " + sec + " seconds! \n"); //Print how many seconds it took.
 		stream = T.stream('statuses/filter', {follow: users}); //Replace the stream with the new user list.
 		listen(); //Proceed to listen to the TL.
-		checkUsers(); //Reimport users every 15min.
+		setTimeout(checkUsers, 600000); //Check once in a while the list of users. In this case, 15 min (600.000 ms)
 	} else{
 		//The variable is not loaded yet.
 		//Reemplazamble console message. Each time this line is called, the console line overrides.
@@ -84,22 +84,25 @@ function listen(){
 function postTweet(tweet){
 	//Post from the app, in form of RT and id, using the tweet.id_str, and executing the declared function.
 	T.post('statuses/retweet/:id', {id: tweet.id_str}, function (err,data,response){
-		var today = new Date();
-		var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
-		var filename = "log" + "\"" + date + ".txt";
-		var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ]";
-		console.log(hour + " RT "+ tweet.id + " done!"); //Confirm the success of the {code} tweet RT.
-		var jsonData = JSON.stringify(tweet);
-		var fs = require('fs');
-			fs.writeFile("tweetlog/tweet_" + tweet.id_str + ".json", jsonData, function(err) {
-    			if (err) {
-        			console.log(err);
-   				}
-			});
+		if(!err){
+			var today = new Date();
+			//var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
+			var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ] ";
+			console.log(hour + "RT "+ tweet.id + " done!"); //Confirm the success of the {code} tweet RT.
+
+			var jsonData = JSON.stringify(tweet); //Get a JSON object representing the tweet object to save.
+			var fs = require('fs'); // Require In/Out module
+				fs.writeFile("tweetlog/tweet_" + tweet.id_str + ".json", jsonData, function(err) { //Write into tweetlog dir a tweetID.json file containing the tweet data.
+    				if (err) {
+        				console.log(err);
+   					} 
+				});
+		}else{
 		/*
-			WARNING: IN THE NEXT VERSION THIS FUNCTION WILL HAVE AN IF-ELSE
-			TO PRINT THE SUCCESS OR THE ERROR.
+			Handle RT error
 		*/
+		}
+		
 	})
 }
 
@@ -113,32 +116,39 @@ function reloadUsers(){
 			users = data.ids; //The users content is replaced with the obtained list in the data.ids field.
 		}else{
 			//console.log(err);
-			// GET application / rate_limit_status.
+
 			//The twitter api doasn't respond or there's an error.
+			//The standard twitter app only allows 15 petitions every 15 minutes, so this is the most common reason to get an error:
+			//"rate_limit_status".
 		}
 	})
 }
 
 function checkUsers(){
-	updateUsers();
-	setTimeout(checkUsers, 600000);
+	updateUsers(); //Call for an user's update
+	setTimeout(checkUsers, 600000); //Wait 15 min (600.000 ms) untill next check.
 }
 
 function updateUsers(){
 	//Get the friends(follows) id from the @AAAAAA user, and execute the following function.
 	T.get('friends/ids', {screen_name: 'noticias_SLO'}, function (err, data, response) {
 		if(!err){
+			var oldNumb = users.length;
+
 			users = data.ids; //The users content is replaced with the obtained list in the data.ids field.
-			var today = new Date();
-			var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
-			var filename = "log" + "\"" + date + ".txt";
-			var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ]";
-			console.log(hour + "Users checked!");
-			console.log("\t New user count: " + users.length);
+
+			if(users.length != oldNumb){ //This means the new list is different from the previous one. Let's log that.
+				var today = new Date(); //Get current time/date
+				var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ] "; //Format for hour log
+				console.log(hour + "Users updated!"); //There's been an update.
+				console.log("\t New user count: " + users.length + "(last one was " + oldNumb + ")."); //And this is the new user count, compared to the last
+			}
 		}else{
 			//console.log(err);
-			// GET application / rate_limit_status.
+
 			//The twitter api doasn't respond or there's an error.
+			//The standard twitter app only allows 15 petitions every 15 minutes, so this is the most common reason to get an error:
+			//"rate_limit_status".
 		}
 	})
 }
