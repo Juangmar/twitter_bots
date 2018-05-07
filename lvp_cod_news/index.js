@@ -10,10 +10,10 @@
 var Twit = require('twit') //Loading twitter API
 var T = new Twit({
 	//Our app credentials. Obtained at https://apps.twitter.com/
-	consumer_key: '***',
-	consumer_secret: '***',
-	access_token: '***',
-	access_token_secret: '***',
+	consumer_key: '+++',
+	consumer_secret: '+++',
+	access_token: '+++',
+	access_token_secret: '+++',
 })
 var users; //Array of users IDs
 var sec = 0; //Integer variable to count how many seconds it takes to get the users.
@@ -67,7 +67,7 @@ function listen(){
 				postTweet(tweet); //Method that RTs the tweet with the previous code.
 				code++; //Tweet RTd, so the unique code is incremented.
 			} else{ //The tweet is not from the user list
-				console.log(hour + "Tweet detected from @" + tweet.user.screen_name + " (Not followed)"); //Print log. Tweet detected but not RTed.
+				console.log(hour + "Tweet detected from @" + tweet.user.screen_name + " (Not followed). {Id: " + tweet.id_str + "}"); //Print log. Tweet detected but not RTed.
 			}
 			reloadUsers();	//In case the user list is modified from the app or anywhere else, reolad the list (asyncronous).
 		}catch(err){
@@ -91,7 +91,7 @@ function postTweet(tweet){
 		console.log(hour + " RT "+ tweet.id + " done!"); //Confirm the success of the {code} tweet RT.
 		var jsonData = JSON.stringify(tweet);
 		var fs = require('fs');
-			fs.writeFile("log/tweet_" + tweet.id_str + ".json", jsonData, function(err) {
+			fs.writeFile("tweetlog/tweet_" + tweet.id_str + ".json", jsonData, function(err) {
     			if (err) {
         			console.log(err);
    				}
