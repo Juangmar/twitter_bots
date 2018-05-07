@@ -14,10 +14,6 @@ var T = new Twit({
 	consumer_secret: '***',
 	access_token: '***',
 	access_token_secret: '***',
-	consumer_key: 'jhgiMqgLiK9fEr3hZdxiDFz4f',
-	consumer_secret: 'psJea3D9LxAQjYQInN9WSY0wFUxSAoednBdxQiXEk8ZuFnXIOA',
-	access_token: '991052713881493504-IzMp9qSXSEN10H2wTiyYuOGLQoFJb3u',
-	access_token_secret: 'PTn3pbKAytlE8wHZOtIwwb11d2pF853qAYZUZvov9cHts',
 })
 var users; //Array of users IDs
 var sec = 0; //Integer variable to count how many seconds it takes to get the users.
