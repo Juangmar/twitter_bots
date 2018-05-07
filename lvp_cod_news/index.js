@@ -14,6 +14,10 @@ var T = new Twit({
 	consumer_secret: '***',
 	access_token: '***',
 	access_token_secret: '***',
+	consumer_key: 'jhgiMqgLiK9fEr3hZdxiDFz4f',
+	consumer_secret: 'psJea3D9LxAQjYQInN9WSY0wFUxSAoednBdxQiXEk8ZuFnXIOA',
+	access_token: '991052713881493504-IzMp9qSXSEN10H2wTiyYuOGLQoFJb3u',
+	access_token_secret: 'PTn3pbKAytlE8wHZOtIwwb11d2pF853qAYZUZvov9cHts',
 })
 var users; //Array of users IDs
 var sec = 0; //Integer variable to count how many seconds it takes to get the users.
@@ -33,6 +37,7 @@ function checkVariable() {
 		process.stdout.write("IDs loaded after " + sec + " seconds! \n"); //Print how many seconds it took.
 		stream = T.stream('statuses/filter', {follow: users}); //Replace the stream with the new user list.
 		listen(); //Proceed to listen to the TL.
+		checkUsers(); //Reimport users every 15min.
 	} else{
 		//The variable is not loaded yet.
 		//Reemplazamble console message. Each time this line is called, the console line overrides.
@@ -62,7 +67,7 @@ function listen(){
 			if (users.indexOf(parseInt(tweet.user.id)) > -1){ //If the author of the tweet is in the user list:
 				// Show on log (console) the info of the tweet detected, and inform that the RT is on process.
 				// [ HH:MM:SS ] @user_name just tweeted! Now retweeting... {code: 12345}
-				console.log(hour + "@" + tweet.user.screen_name + " just tweeted! Now retweeting... {code: " + code + "}"); 
+				console.log(hour + "@" + tweet.user.screen_name + " just tweeted! Now retweeting... {code: " + tweet.id + "}"); 
 				postTweet(tweet); //Method that RTs the tweet with the previous code.
 				code++; //Tweet RTd, so the unique code is incremented.
 			} else{ //The tweet is not from the user list
@@ -86,8 +91,15 @@ function postTweet(tweet){
 		var today = new Date();
 		var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
 		var filename = "log" + "\"" + date + ".txt";
-		var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ] ";
-		console.log(hour + "RT "+ tweet.id + " done!"); //Confirm the success of the {code} tweet RT.
+		var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ]";
+		console.log(hour + " RT "+ tweet.id + " done!"); //Confirm the success of the {code} tweet RT.
+		var jsonData = JSON.stringify(tweet);
+		var fs = require('fs');
+			fs.writeFile("log/tweet_" + tweet.id_str + ".json", jsonData, function(err) {
+    			if (err) {
+        			console.log(err);
+   				}
+			});
 		/*
 			WARNING: IN THE NEXT VERSION THIS FUNCTION WILL HAVE AN IF-ELSE
 			TO PRINT THE SUCCESS OR THE ERROR.
@@ -104,6 +116,32 @@ function reloadUsers(){
 		if(!err){
 			users = data.ids; //The users content is replaced with the obtained list in the data.ids field.
 		}else{
+			//console.log(err);
+			// GET application / rate_limit_status.
+			//The twitter api doasn't respond or there's an error.
+		}
+	})
+}
+
+function checkUsers(){
+	updateUsers();
+	setTimeout(checkUsers, 600000);
+}
+
+function updateUsers(){
+	//Get the friends(follows) id from the @AAAAAA user, and execute the following function.
+	T.get('friends/ids', {screen_name: 'noticias_SLO'}, function (err, data, response) {
+		if(!err){
+			users = data.ids; //The users content is replaced with the obtained list in the data.ids field.
+			var today = new Date();
+			var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
+			var filename = "log" + "\"" + date + ".txt";
+			var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ]";
+			console.log(hour + "Users checked!");
+			console.log("\t New user count: " + users.length);
+		}else{
+			//console.log(err);
+			// GET application / rate_limit_status.
 			//The twitter api doasn't respond or there's an error.
 		}
 	})
