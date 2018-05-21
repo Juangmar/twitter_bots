@@ -1,2 +1,4 @@
 
 lvp_cod_news/user.json
+lvp_cod_news/errors/*.txt
+lvp_cod_news/log/*.txt
