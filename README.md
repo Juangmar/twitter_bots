@@ -22,6 +22,11 @@ The .json file must have the next content:
 ```
 Where the lines must be replaced with your own cretendial. Those credentials are asociated with your own app, created with a Twitter user via [it's own page](https://apps.twitter.com/) 
 
+## Documentation
+
+Every JavaScript file is documented, but I'm writing a [wiki page](https://github.com/Juangmar/twitter_bots/wiki) with more detailed information, including every info I've found or discovered regarding the API methods and objects.
+
+
 ## Contributing
 
 *Twitter Bots* is an open source project, so anyone can contribute to develop the bots, and we encourage you to do so.
