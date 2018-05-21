@@ -114,12 +114,13 @@ function postTweet(tweet){
 			logMessage = hour + " " + lastEvent;
 
 			var jsonData = JSON.stringify(tweet);
-
 			fs.writeFile("tweetlog/tweet_" + tweet.id_str + ".json", jsonData, function(err) {
     			if (err) {
         			writeError(err);
 				}
 			});
+
+			writeLog(logMessage);
 
 		} else{
 			writeError(err);
@@ -145,9 +146,12 @@ function reloadUsers(){
 	})
 }
 
+/*
+*	Function that checks the users the account follows each 10 minutes
+*/
 function checkUsers(){
-	updateUsers();
-	setTimeout(checkUsers, 600000);
+	updateUsers();	// Ask the API for the users
+	setTimeout(checkUsers, 600000); //Repeat in 10m
 }
 
 function updateUsers(){
@@ -177,25 +181,34 @@ function updateUsers(){
 	})
 }
 
+/*
+*	Given a message in string, appends to the log file the hour and message.
+*/
 function writeLog(message){
-	var today = new Date();
-	var date = today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
-	var filename = 'log/' + date + ".txt";
-	var stream = fs.createWriteStream(filename, {flags:'a'});
-	stream.write(message + "\n");
-	stream.end();
+	var today = new Date(); //Get the current date and hour
+	var date = today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //string with the date formated
+	var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ]"; //String with the hour fotmated
+	var filename = 'log/' + date + ".txt"; //The txt log file is in the log directory, named after the date.
+	var stream = fs.createWriteStream(filename, {flags:'a'}); //Open the stream to write
+	stream.write(hour + " " + message + "\n"); //Write in the stream the hour, the message and a line separator
+	stream.end(); //Close the stream
 }
 
+/*
+*	Given an Error object, the method writes in a json file the content of that error
+*/ 
 function writeError(err){
 
-	var today = new Date();
-	var date = today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
-	var hour = today.getHours() + "_" + today.getMinutes() + "_" + today.getSeconds()
-	var filename = 'errors/' + date + "_" + hour + ".txt";
+	var today = new Date(); //Get the current date and hour
+	var date = today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //string with the date formated
+	var hour = today.getHours() + "_" + today.getMinutes() + "_" + today.getSeconds(); //String with the hour fotmated
+	
+	writeLog("Error catched. Check error file (" + filename + ") to read report."); //Write in the log a warning about the error
 
-	writeLog("Error catched. Check error file (" + filename + ") to read report.");
-
-	var stream = fs.createWriteStream(filename, {flags:'a'});
-	stream.write("************* " + err.code + " : " + err.message + " *************\n\n" + err.stack + "\n\n\n");
-	stream.end();
+	var jsonData = JSON.stringify(err); // Convert the error object to json
+	fs.writeFile("errors/" + date+"_"+hour + ".json", jsonData, function(err) { //Write the .json file
+		if (err) {
+			writeError(err);
+		}
+	});
 }
