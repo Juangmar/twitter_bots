@@ -20,6 +20,14 @@ var T = new Twit({
 })
 var users; //Array of users IDs
 var sec = 0; //Integer variable to count how many seconds it takes to get the users.
+var rt = 0; // To store the number of rts done
+var listened = 0; // Number of tweets detected
+var title = " ---- LVP NEWS BOT ----\n\n" // String containing the bot title
+var lastEvent = ""; //To store the last event
+var openDay = new Date(); //Get the day + hour the tweet is detected.
+var openDate =  openDay.getFullYear() + '/' + (openDay.getMonth()+1) + '/' + openDay.getDate(); //String containing the date. Format "yyyy/mm/dd"
+var openHour = + openDay.getHours() + ":" + openDay.getMinutes(); //String containig the hour. Format "HH:MM" 
+var originalTime = openDate + " (" + openHour + ")"; //String containing first run time. Format "yyy/mmm/dd (hh:mm)"
 
 console.log("Booting up...... success!"); //Initial message. The app is running.
 console.log("The user data (from user.json) is:"); //Show the data obtained from the file.
@@ -53,25 +61,17 @@ function checkVariable() {
 *	Starts the TL listening. It's the main function.
 */
 function listen(){
-	var openDay = new Date(); //Get the day + hour the tweet is detected.
-	var openDate =  openDay.getFullYear() + '/' + (openDay.getMonth()+1) + '/' + openDay.getDate(); //String containing the date. Format "yyyy/mm/dd"
-	var openHour = + openDay.getHours() + ":" + openDay.getMinutes(); //String containig the hour. Format "HH:MM" 
-	var originalTime = openDate + " (" + openHour + ")"; //String containing first run time. Format "yyy/mmm/dd (hh:mm)"
-
 
 	console.log("using the following users (" + users.length + "):"); 	// To check if the loading is correct, 
 	console.log(users);													// the list is printed.
 	console.log("Now listening twitter accounts............"); 			//The bot really starts now.
-	var rt = 0; // To store the number of rts done
-	var listened = 0; // Number of tweets detected
-	var title = " ---- LVP NEWS BOT ----\n\n" // String containing the bot title
-	var lastEvent = ""; //To store the last event
+	
 	//Stream. Each time a tweet is detected, execute the code below.
 	stream.on('tweet', function (tweet) {
 		try{
-			istened++; //One more tweet detected
+			listened++; //One more tweet detected
 			var today = new Date(); //Get the day + hour the tweet is detected.
-			//var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //String containing the date. Format "yyyy-mm-dd"
+			var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //String containing the date. Format "yyyy-mm-dd"
 			var filename = "log" + "\"" + date + ".txt"; //Log file name. It's in the log directory, with the name log\yyyy-mm-dd.txt
 			var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ] "; //String containig the hour. Format "[ HH:MM:SS ] " 
 			
@@ -155,9 +155,11 @@ function updateUsers(){
 	T.get('friends/ids', {screen_name: 'noticias_SLO'}, function (err, data, response) {
 		if(!err){
 			users = data.ids; //The users content is replaced with the obtained list in the data.ids field.
-			var today = new Date();
-			var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ]";
-
+			
+			
+			
+			var today = new Date(); //Get the day + hour the tweet is detected.
+			var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ] "; //String containig the hour. Format "[ HH:MM:SS ] " 
 			lastEvent = "Users updated! New user count: " + users.length;
 
 			process.stdout.write('\033c'); //Used to clean the console 
@@ -167,7 +169,7 @@ function updateUsers(){
 		} else{
 			//writeError(err); //This error is too common and non important to waste disk space and log data
 
-			
+
 			// GET application / rate_limit_status.
 			//The twitter api doasn't respond or there's an error.
 
