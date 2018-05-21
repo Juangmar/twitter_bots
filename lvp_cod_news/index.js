@@ -202,11 +202,11 @@ function writeError(err){
 	var today = new Date(); //Get the current date and hour
 	var date = today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //string with the date formated
 	var hour = today.getHours() + "_" + today.getMinutes() + "_" + today.getSeconds(); //String with the hour fotmated
-	
+	var filename = 'err/' + date + "_" + hour + ".json"; //The txt log file is in the err directory, named after the date.
 	writeLog("Error catched. Check error file (" + filename + ") to read report."); //Write in the log a warning about the error
 
 	var jsonData = JSON.stringify(err); // Convert the error object to json
-	fs.writeFile("errors/" + date+"_"+hour + ".json", jsonData, function(err) { //Write the .json file
+	fs.writeFile("errors/" + filename, jsonData, function(err) { //Write the .json file
 		if (err) {
 			writeError(err);
 		}
