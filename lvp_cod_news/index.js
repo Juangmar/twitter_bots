@@ -7,10 +7,10 @@
 *
 */
 var Twit = require('twit') //Loading twitter API
-var fs = require("fs");
+var fs = require("fs"); //IO module
 
-var content = fs.readFileSync("user.json");
-var userData = JSON.parse(content);
+var content = fs.readFileSync("user.json"); // IMPORTANT TO CREATE THIS FILE. This contains the user token info. 
+var userData = JSON.parse(content); //parse the content of the file.
 var T = new Twit({
 	//Our app credentials. Obtained at https://apps.twitter.com/
 	consumer_key: userData.consumer_key,
@@ -22,8 +22,8 @@ var users; //Array of users IDs
 var sec = 0; //Integer variable to count how many seconds it takes to get the users.
 
 console.log("Booting up...... success!"); //Initial message. The app is running.
-console.log("The user data (from user.json) is:");
-console.log(T);
+console.log("The user data (from user.json) is:"); //Show the data obtained from the file.
+console.log(T); // Twit info
 console.log("Loading IDs..."); // Message: The loading of users begin.
 reloadUsers(); //User load begin
 checkVariable(); //Method to wait for the loading
@@ -54,14 +54,14 @@ function checkVariable() {
 */
 function listen(){
 	var openDay = new Date(); //Get the day + hour the tweet is detected.
-	var openDate =  openDay.getFullYear() + '/' + (openDay.getMonth()+1) + '/' + openDay.getDate(); //String containing the date. Format "yyyy-mm-dd"
-	var openHour = + openDay.getHours() + ":" + openDay.getMinutes(); //String containig the hour. Format "[ HH:MM:SS ] " 
-	var originalTime = openDate + " (" + openHour + ")";
+	var openDate =  openDay.getFullYear() + '/' + (openDay.getMonth()+1) + '/' + openDay.getDate(); //String containing the date. Format "yyyy/mm/dd"
+	var openHour = + openDay.getHours() + ":" + openDay.getMinutes(); //String containig the hour. Format "HH:MM" 
+	var originalTime = openDate + " (" + openHour + ")"; //String containing first run time. Format "yyy/mmm/dd (hh:mm)"
 
 
 	console.log("using the following users (" + users.length + "):"); 	// To check if the loading is correct, 
 	console.log(users);													// the list is printed.
-	console.log("Now listening twitter accounts............"); //The bot really starts now.
+	console.log("Now listening twitter accounts............"); 			//The bot really starts now.
 	var rt = 0; // To store the number of rts done
 	var listened = 0; // Number of tweets detected
 	var title = " ---- LVP NEWS BOT ----\n\n" // String containing the bot title
@@ -69,11 +69,12 @@ function listen(){
 	//Stream. Each time a tweet is detected, execute the code below.
 	stream.on('tweet', function (tweet) {
 		try{
-				listened++; //One more tweet detected
-				var today = new Date(); //Get the day + hour the tweet is detected.
-				//var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //String containing the date. Format "yyyy-mm-dd"
-				//var filename = "log" + "\"" + date + ".txt"; //Log file name. It's in the log directory, with the name log\yyyy-mm-dd.txt
-				var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ] "; //String containig the hour. Format "[ HH:MM:SS ] " 
+			istened++; //One more tweet detected
+			var today = new Date(); //Get the day + hour the tweet is detected.
+			//var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //String containing the date. Format "yyyy-mm-dd"
+			var filename = "log" + "\"" + date + ".txt"; //Log file name. It's in the log directory, with the name log\yyyy-mm-dd.txt
+			var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ] "; //String containig the hour. Format "[ HH:MM:SS ] " 
+			
 			if (users.indexOf(parseInt(tweet.user.id)) > -1){ //If the author of the tweet is in the user list:
 				// Show on log (console) the info of the tweet detected, and inform that the RT is on process.
 				rt++; // One more rt to the counter
@@ -82,17 +83,18 @@ function listen(){
 			} else{ //The tweet is not from the user list
 				lastEvent = "Tweet detected from @" + tweet.user.screen_name + " (Not followed). {Tweet id: " + tweet.id_str + "}"; //Update the last event
 			}
+			
 			process.stdout.write('\033c'); //Used to clean the console 
 			process.stdout.write(title + hour + "Since the bot started at "+ originalTime + ": Following " + users.length + " users | " + rt + " RTs done | " + listened + " tweets detected.\n" + 
-					"\t Last event: " + lastEvent);
+					"\t Last event: " + lastEvent); //Post the current bot's info
 
-					//Post the current bot's info
-
+			writeLog(lastEvent);
 			reloadUsers();	//In case the user list is modified from the app or anywhere else, reolad the list (asyncronous).
 		}catch(err){ //If there's an error during strean, reboot
-			console.log("--> " + hour + "Exception catched. Rebooting"); //Inform error
-			reloadUsers(); //Reload users
-			checkVariable(); //Paralize the program untill users ready
+			console.log("--> " + hour + "Exception catched. Rebooting"); //Inform error on console.
+			writeError(err); //Save the error info in file.
+			reloadUsers(); //Reload users.
+			checkVariable(); //Paralize the program untill users ready.
 		}
 	})
 }
@@ -103,22 +105,25 @@ function listen(){
 function postTweet(tweet){
 	//Post from the app, in form of RT and id, using the tweet.id_str, and executing the declared function.
 	T.post('statuses/retweet/:id', {id: tweet.id_str}, function (err,data,response){
-		var today = new Date();
-		var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
-		var filename = "log" + "\"" + date + ".txt";
-		var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ]";
-		lastEvent = ("RT "+ tweet.id + " done!"); //Confirm the success of the {code} tweet RT.
-		var jsonData = JSON.stringify(tweet);
-		var fs = require('fs');
+		if(!err){
+			var today = new Date();
+			var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
+			var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ]";
+			lastEvent = ("RT "+ tweet.id + " done!"); //Confirm the success of the {code} tweet RT.
+		
+			logMessage = hour + " " + lastEvent;
+
+			var jsonData = JSON.stringify(tweet);
+
 			fs.writeFile("tweetlog/tweet_" + tweet.id_str + ".json", jsonData, function(err) {
     			if (err) {
-        			console.log(err);
-   				}
+        			writeError(err);
+				}
 			});
-		/*
-			WARNING: IN THE NEXT VERSION THIS FUNCTION WILL HAVE AN IF-ELSE
-			TO PRINT THE SUCCESS OR THE ERROR.
-		*/
+
+		} else{
+			writeError(err);
+		}
 	})
 }
 
@@ -131,7 +136,9 @@ function reloadUsers(){
 		if(!err){
 			users = data.ids; //The users content is replaced with the obtained list in the data.ids field.
 		}else{
-			//console.log(err);
+			//writeError(err); //This error is too common and non important to waste disk space
+			
+			
 			// GET application / rate_limit_status.
 			//The twitter api doasn't respond or there's an error.
 		}
@@ -149,15 +156,44 @@ function updateUsers(){
 		if(!err){
 			users = data.ids; //The users content is replaced with the obtained list in the data.ids field.
 			var today = new Date();
-			var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
-			var filename = "log" + "\"" + date + ".txt";
 			var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ]";
-			console.log(hour + "Users checked!");
-			console.log("\t New user count: " + users.length);
-		}else{
-			//console.log(err);
+
+			lastEvent = "Users updated! New user count: " + users.length;
+
+			process.stdout.write('\033c'); //Used to clean the console 
+			process.stdout.write(title + hour + "Since the bot started at "+ originalTime + ": Following " + users.length + " users | " + rt + " RTs done | " + listened + " tweets detected.\n" + 
+					"\t Last event: " + lastEvent); //Post the current bot's info
+
+		} else{
+			//writeError(err); //This error is too common and non important to waste disk space and log data
+
+			
 			// GET application / rate_limit_status.
 			//The twitter api doasn't respond or there's an error.
+
 		}
 	})
+}
+
+function writeLog(message){
+	var today = new Date();
+	var date = today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
+	var filename = 'log/' + date + ".txt";
+	var stream = fs.createWriteStream(filename, {flags:'a'});
+	stream.write(message + "\n");
+	stream.end();
+}
+
+function writeError(err){
+
+	var today = new Date();
+	var date = today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate();
+	var hour = today.getHours() + "_" + today.getMinutes() + "_" + today.getSeconds()
+	var filename = 'errors/' + date + "_" + hour + ".txt";
+
+	writeLog("Error catched. Check error file (" + filename + ") to read report.");
+
+	var stream = fs.createWriteStream(filename, {flags:'a'});
+	stream.write("************* " + err.code + " : " + err.message + " *************\n\n" + err.stack + "\n\n\n");
+	stream.end();
 }
