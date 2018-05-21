@@ -1,4 +1,4 @@
-# twitter_bots
+# TWITTER BOTS
 A few twitter bots and it's API documentartion
 
 ## Getting Started
@@ -13,6 +13,7 @@ To execute any bot you must create a .json file with the user authentication in 
 
 The .json file must have the next content:
 ```javascript
+{
 	"consumer_key": "----------",
 	"consumer_secret": "----------",
 	"access_token": "----------",
