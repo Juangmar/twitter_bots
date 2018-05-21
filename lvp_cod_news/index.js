@@ -7,17 +7,23 @@
 *
 */
 var Twit = require('twit') //Loading twitter API
+var fs = require("fs");
+
+var content = fs.readFileSync("user.json");
+var userData = JSON.parse(content);
 var T = new Twit({
 	//Our app credentials. Obtained at https://apps.twitter.com/
-	consumer_key: '***',
-	consumer_secret: '***',
-	access_token: '***',
-	access_token_secret: '***',
+	consumer_key: userData.consumer_key,
+	consumer_secret: userData.consumer_secret,
+	access_token: userData.access_token,
+	access_token_secret: userData.access_token_secret,
 })
 var users; //Array of users IDs
 var sec = 0; //Integer variable to count how many seconds it takes to get the users.
 
 console.log("Booting up...... success!"); //Initial message. The app is running.
+console.log("The user data (from user.json) is:");
+console.log(T);
 console.log("Loading IDs..."); // Message: The loading of users begin.
 reloadUsers(); //User load begin
 checkVariable(); //Method to wait for the loading
