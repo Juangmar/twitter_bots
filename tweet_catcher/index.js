@@ -68,7 +68,6 @@ function listen(){
 	//Stream. Each time a tweet is detected, execute the code below.
 	stream.on('tweet', function (tweet) {
 		try{
-
 			var today = new Date(); //Get the day + hour the tweet is detected.
 			var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //String containing the date. Format "yyyy-mm-dd"
 			var filename = "log" + "\"" + date + ".txt"; //Log file name. It's in the log directory, with the name log\yyyy-mm-dd.txt
@@ -86,12 +85,13 @@ function listen(){
 			}
 			
 			process.stdout.write('\033c'); //Used to clean the console 
-			process.stdout.write(title + hour + "Since the bot started at "+ originalTime + ": Following " + users.length + " users | " + rt + " tweets from followed accounts | " + listened + " tweets detected from not followed.\n" + 
+			process.stdout.write(title + hour + "Since the bot started at "+ originalTime + ": Following " + users.length + " users | " + followed + " tweets from followed accounts | " + not_followed + " tweets detected from not followed.\n" + 
 					"\t Last event: " + lastEvent); //Post the current bot's info
 
 			reloadUsers();	//In case the user list is modified from the app or anywhere else, reolad the list (asyncronous).
 		}catch(err){ //If there's an error during strean, reboot
 			console.log("--> " + hour + "Exception catched. Rebooting"); //Inform error on console.
+			console.log(err);
 			writeError(err); //Save the error info in file.
 			reloadUsers(); //Reload users.
 			checkVariable(); //Paralize the program untill users ready.
@@ -115,7 +115,7 @@ function postTweet(tweet){
 /*
 	Given a tweet and a code, the bot saves the tweet (followed user)
 */
-function postTweet(tweet){
+function postNonTweet(tweet){
 	//Post from the app, in form of RT and id, using the tweet.id_str, and executing the declared function.
 	var jsonData = JSON.stringify(tweet);
 	fs.writeFile("tweets_not_followed/tweet_" + tweet.id_str + ".json", jsonData, function(err) {
@@ -135,14 +135,10 @@ function reloadUsers(){
 			users = data.ids; //The users content is replaced with the obtained list in the data.ids field.
 		
 		}else{
-			//writeError(err); //This error is too common and non important to waste disk space
-			
-			
 			// GET application / rate_limit_status.
 			//The twitter api doasn't respond or there's an error.
 		}
-	})
-	checkUsers();
+	});
 }
 
 /*
@@ -166,7 +162,8 @@ function updateUsers(){
 			lastEvent = "Users updated! New user count: " + users.length;
 
 			process.stdout.write('\033c'); //Used to clean the console 
-			process.stdout.write(title + hour + "Since the bot started at "+ originalTime + ": Following " + users.length + " users | " + rt + " RTs done | " + listened + " tweets detected.\n" + 
+			process.stdout.write(title + hour + "Since the bot started at "+ originalTime + ": Following " + users.length + " users | " 
+				+ followed + " RTs done | " + not_followed + " tweets detected.\n" + 
 					"\t Last event: " + lastEvent); //Post the current bot's info
 
 		} else{
@@ -181,16 +178,15 @@ function updateUsers(){
 /*
 *	Given an Error object, the method writes in a json file the content of that error
 */ 
-function writeError(err){
+function writeError(error){
 
 	var today = new Date(); //Get the current date and hour
 	var date = today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //string with the date formated
 	var hour = today.getHours() + "_" + today.getMinutes() + "_" + today.getSeconds(); //String with the hour fotmated
 	var filename = 'err/' + date + "_" + hour + ".json"; //The txt log file is in the err directory, named after the date.
-	writeLog("Error catched. Check error file (" + filename + ") to read report."); //Write in the log a warning about the error
-
-	var jsonData = JSON.stringify(err); // Convert the error object to json
-	fs.writeFile("errors/" + filename, jsonData, function(err) { //Write the .json file
+	
+	var jsonData = JSON.stringify(error); // Convert the error object to json
+	fs.writeFile(filename, jsonData, function(err) { //Write the .json file
 		if (err) {
 			writeError(err);
 		}
