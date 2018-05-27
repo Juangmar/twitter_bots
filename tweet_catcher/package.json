@@ -1,0 +1,33 @@
+{
+  "name": "lvp_cod_news",
+  "version": "1.0.0",
+  "description": "a twitter bot thats rts all meaningfull accounts in the LVP-CoD scene",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Juangmar/twitter_bots.git"
+  },
+  "keywords": [
+    "twitter",
+    "bot",
+    "rt",
+    "cod",
+    "call",
+    "of",
+    "duty",
+    "esports"
+  ],
+  "author": "Juangmar",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Juangmar/twitter_bots/issues"
+  },
+  "homepage": "https://github.com/Juangmar/twitter_bots#readme",
+  "dependencies": {
+    "index.js": "0.0.3",
+    "twit": "^2.2.9"
+  }
+}
