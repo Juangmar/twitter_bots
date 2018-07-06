@@ -27,6 +27,7 @@ var lastEvent = ""; //To store the last event
 var openDay = new Date(); //Get the day + hour the tweet is detected.
 var openDate =  openDay.getFullYear() + '/' + (openDay.getMonth()+1) + '/' + openDay.getDate(); //String containing the date. Format "yyyy/mm/dd"
 var openHour = + openDay.getHours() + ":" + openDay.getMinutes(); //String containig the hour. Format "HH:MM" 
+var lastPostHour = openDay.getHours()-1;
 var originalTime = openDate + " (" + openHour + ")"; //String containing first run time. Format "yyy/mmm/dd (hh:mm)"
 
 console.log("Booting up...... success!"); //Initial message. The app is running.
@@ -64,7 +65,7 @@ function listen(){
 	console.log("using the following users (" + users.length + "):"); 	// To check if the loading is correct, 
 	console.log(users);													// the list is printed.
 	console.log("Now listening twitter accounts............"); 			//The bot really starts now.
-	
+
 	//Stream. Each time a tweet is detected, execute the code below.
 	stream.on('tweet', function (tweet) {
 		try{
@@ -85,9 +86,10 @@ function listen(){
 			}
 			
 			process.stdout.write('\033c'); //Used to clean the console 
-			process.stdout.write(title + hour + "Since the bot started at "+ originalTime + ": Following " + users.length + " users | " + followed + " tweets from followed accounts | " + not_followed + " tweets detected from not followed.\n" + 
-					"\t Last event: " + lastEvent); //Post the current bot's info
-
+			var message = hour + "Since the bot started at "+ originalTime + " the server has detected: \n\n Following " + users.length + " users \n\n " + followed + " tweets from followed accounts \n\n " + not_followed + " tweets detected from not followed.";
+			var ev = "\n\n --> Last event: " + lastEvent;
+			process.stdout.write(title + " " + message + ev); //Post the current bot's info
+			if(today.getHours() != lastPostHour) postStatusMssg(message, today.getHours());
 			reloadUsers();	//In case the user list is modified from the app or anywhere else, reolad the list (asyncronous).
 		}catch(err){ //If there's an error during strean, reboot
 			console.log("--> " + hour + "Exception catched. Rebooting"); //Inform error on console.
@@ -97,6 +99,16 @@ function listen(){
 			checkVariable(); //Paralize the program untill users ready.
 		}
 	})
+}
+
+function postStatusMssg(string, hournow){
+	T.post('statuses/update', {status: string}, function(err,data,response){
+		if(err){
+			console.log(err);
+		} else{
+			lastPostHour = hournow;
+		}
+	});
 }
 
 /*
