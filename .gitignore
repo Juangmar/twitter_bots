@@ -5,3 +5,4 @@ lvp_cod_news/errors/*.txt
 lvp_cod_news/log/*.txt
 lvp_cod_news/tweetlog/*.json
 tweet_catcher/user.json
+twitter_confessions/user.json

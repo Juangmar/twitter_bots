@@ -6,16 +6,17 @@
 *	https://github.com/Juangmar
 *
 */
-
 var Twit = require('twit') //Load the twitter API
+var fs = require("fs"); //IO module
+var content = fs.readFileSync("user.json"); // IMPORTANT TO CREATE THIS FILE. This contains the user token info. 
+var userData = JSON.parse(content); //parse the content of the file.
 var T = new Twit({
 	//Our app credentials. Obtained at https://apps.twitter.com/
-	consumer_key: '***',
-	consumer_secret: '***',
-	access_token: '***',
-	access_token_secret: '***',
+	consumer_key: userData.consumer_key,
+	consumer_secret: userData.consumer_secret,
+	access_token: userData.access_token,
+	access_token_secret: userData.access_token_secret,
 })
-
 var stream = T.stream('user'); //Variable that stores the user stream.
 
 console.log("Booting up...... success!"); //initial message. Shows that the program is executing.
