@@ -18,6 +18,8 @@ var T = new Twit({
 	access_token: userData.access_token,
 	access_token_secret: userData.access_token_secret,
 })
+var followedDir = "tweets_followed/";
+var nFollowedDir = "tweets_n_followed/"
 var users; //Array of users IDs
 var sec = 0; //Integer variable to count how many seconds it takes to get the users.
 var followed = 0; // To store the number of rts done
@@ -25,10 +27,11 @@ var not_followed = 0; // Number of tweets detected
 var title = " ---- TWEET CATCHER ----\n\n" // String containing the bot title
 var lastEvent = ""; //To store the last event
 var openDay = new Date(); //Get the day + hour the tweet is detected.
-var openDate =  openDay.getFullYear() + '/' + (openDay.getMonth()+1) + '/' + openDay.getDate(); //String containing the date. Format "yyyy/mm/dd"
+var openDate =  openDay.getFullYear() + '-' + (openDay.getMonth()+1) + '-' + openDay.getDate(); //String containing the date. Format "yyyy/mm/dd"
 var openHour = + openDay.getHours() + ":" + openDay.getMinutes(); //String containig the hour. Format "HH:MM" 
 var lastPostHour = openDay.getHours()-1;
 var originalTime = openDate + " (" + openHour + ")"; //String containing first run time. Format "yyy/mmm/dd (hh:mm)"
+var currentDate;
 
 console.log("Booting up...... success!"); //Initial message. The app is running.
 console.log("The user data (from user.json) is:"); //Show the data obtained from the file.
@@ -71,6 +74,7 @@ function listen(){
 		try{
 			var today = new Date(); //Get the day + hour the tweet is detected.
 			var date =  today.getFullYear() + '_' + (today.getMonth()+1) + '_' + today.getDate(); //String containing the date. Format "yyyy-mm-dd"
+			currentDate = date;
 			var filename = "log" + "\"" + date + ".txt"; //Log file name. It's in the log directory, with the name log\yyyy-mm-dd.txt
 			var hour = "[ " + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ] "; //String containig the hour. Format "[ HH:MM:SS ] " 
 			
@@ -117,7 +121,11 @@ function postStatusMssg(string, hournow){
 function postTweet(tweet){
 	//Post from the app, in form of RT and id, using the tweet.id_str, and executing the declared function.
 	var jsonData = JSON.stringify(tweet);
-	fs.writeFile("tweets_followed/tweet_" + tweet.id_str + ".json", jsonData, function(err) {
+	var dir = followedDir+"reg_"+currentDate;
+	if(!fs.existsSync(dir)){
+		fs.mkdirSync(dir);	
+	}
+	fs.writeFile(dir + "/tweet_" + tweet.id_str + ".json", jsonData, function(err) {
 		if (err) {
 			writeError(err);
 		}
@@ -130,7 +138,11 @@ function postTweet(tweet){
 function postNonTweet(tweet){
 	//Post from the app, in form of RT and id, using the tweet.id_str, and executing the declared function.
 	var jsonData = JSON.stringify(tweet);
-	fs.writeFile("tweets_not_followed/tweet_" + tweet.id_str + ".json", jsonData, function(err) {
+	var dir = nFollowedDir+"reg_"+currentDate;
+	if(!fs.existsSync(dir)){
+		fs.mkdirSync(dir);	
+	}
+	fs.writeFile(dir+"/tweet_" + tweet.id_str + ".json", jsonData, function(err) {
 		if (err) {
 			writeError(err);
 		}
